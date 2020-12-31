@@ -1,0 +1,12 @@
+{% extends 'departmenthead.html' %}
+{% block cardtitle %}
+department charge
+{% endblock cardtitle %}
+{% block content %}
+<form method="post">
+{% csrf_token %}
+{{form1.as_p}}
+{{form2.as_p}}
+<input type="submit" value="create" class="btn btn-primary btn-block">
+</form>
+{% endblock content %}
