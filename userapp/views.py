@@ -1,14 +1,12 @@
 from django.db.models import F
 from django.http.response import HttpResponse
-from administrator.models import Department
+from administrator.models import Budget, Department
 from django.urls.base import reverse, reverse_lazy
-from django.views.generic.list import ListView
 from userapp.forms import ExpenseForm
 from userapp.models import Expense
 from django.shortcuts import redirect, render
 from django.views.generic import View, CreateView
 from django.contrib.auth.models import User
-import copy
 from typing import Final
 # Create your views here.
 
@@ -18,10 +16,22 @@ class ExpenseCreate(CreateView):
     form_class = ExpenseForm
     success_url = reverse_lazy('expensecreate')
     template_name = "user/form.html"
+    
+    def get_context_data(self, *args,**kwargs) :
+        context =super().get_context_data(*args,**kwargs)
+        context['head'] = "expense create"
+        return context
 
     def form_valid(self, form):
-
-        form.user = 1
+        try: 
+            form.user = self.request.user
+        except:
+            form.user = 1
+        department = form.cleaned_data['department']
+        print(department)
+        amount = form.cleaned_data['amount']
+        x=Department.objects.filter(name__iexact=department)
+        x.update(balance=F('balance')-amount)
         return super().form_valid(form)
 
 
@@ -29,11 +39,12 @@ class ExpenseView(View):
     def get(self, request, *args, **kwargs):
         try:
             data = Expense.objects.filter(
-                department=User.objects.get(id=2).head.department)
+                department=request.user.head.department)
         except:
             data = ''
         context = {
-            'data': data
+            'data': data,
+            
         }
         return render(request, 'user/expense.html', context)
 
@@ -49,12 +60,11 @@ def ExpenseUpdate(request, pk):
             x = obj.amount
             print(f"{x} is the input")
             sum = a-x
-            sumx=-sum
-            Department.objects.filter(name__iexact=obj.department).update(balance=F('balance')-sumx)
+            sumx = -sum
+            Department.objects.filter(name__iexact=obj.department).update(
+                balance=F('balance')-sumx)
             obj.save()
             return redirect(reverse('expenselist'))
-         
-            
         
         # if x < a:
         #     print("a is greater than x")
@@ -62,7 +72,7 @@ def ExpenseUpdate(request, pk):
         #     x=Department.objects.get(name__iexact=obj.department)
         #     x.update(balance=F('balance')+sum)
         #     print(x)
-    
+
         # elif x > a:
         #     sum = x-a
         #     print(sum)
@@ -70,6 +80,38 @@ def ExpenseUpdate(request, pk):
         # else:
         #     print("those are equal")
     context = {
-        'form': ExpenseForm(instance=obj_data)
+        'form': ExpenseForm(instance=obj_data),
+        'head':"Expense update"
     }
+    print(request.user)
     return render(request, 'user/form.html', context)
+
+
+class UserDashboard(View):
+    def get(self, *args, **kwargs):
+        
+        budget =Budget.objects.filter(department=self.request.user.head.department)
+        print(budget)
+        exp = Expense.objects.filter(department=self.request.user.head.department)
+        print(exp)
+        context = {
+            
+        }
+        return render(self.request,'user/dashboard.html',context)
+
+
+
+class BudgetView(View):
+    def get(self,request):
+        try:
+         x=Budget.objects.filter(department=request.user.head.department)
+        except:
+            x = []
+        context={
+            'budget':x
+        }
+        
+        return render(request,'user/budget.html',context)
+    
+    
+    

@@ -13,7 +13,7 @@ class Department(models.Model):
     name = models.CharField(max_length=100)
     balance = models.FloatField(blank=True, null=True, validators=[MinValueValidator(
         0.00, message="you dont have enough budget to raise fund")], default=0)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now=True)
 
     def get_update_url(self):
         return reverse("depupdate", kwargs={'pk': self.pk})

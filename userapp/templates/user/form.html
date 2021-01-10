@@ -1,13 +1,19 @@
-<style>
-li{
-    color:red;
-    list-style:none;
-}
 
-</style>
+{% extends 'user/base.html' %}
+{% load crispy_forms_tags %}
+{% block cardtitle %}
+{{head}}
+{% endblock cardtitle %}
+{% block content %}
 
 <form method="post">
-{{form.as_p}}
+{{form|crispy}}
 {% csrf_token %}
-<input type="submit" value="create">
+<input type="submit" value="create" class="btn btn-success btn-block font-weight-bold">
 </form>
+{% endblock content %}
+
+
+
+
+    

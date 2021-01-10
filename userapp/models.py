@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models.fields import DateTimeField
+from django.shortcuts import redirect
+from django.urls.base import reverse
 from administrator.models import Department
 from django.contrib.auth.models import User
 from datetime import  datetime
@@ -11,7 +13,7 @@ class Expense(models.Model):
     name = models.CharField(max_length=100)
     desc = models.TextField()
     department = models.ForeignKey(Department,on_delete=models.DO_NOTHING,blank=True,null=True)
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
     amount = models.FloatField(validators=[MinValueValidator(0.00,message="amount should be greater than 0")])
     timestamp = models.DateTimeField(auto_now=True)
 
@@ -25,6 +27,9 @@ class Expense(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def get_update_url(self):
+        return reverse('expenseupdate',kwargs={'pk':self.pk})
 
 
     # def save(self,instance,*args, **kwargs):

@@ -152,3 +152,7 @@ def userDelete(request,pk):
     if request.method =="POST":
         User.objects.get(id=pk).delete()
         return redirect('userlist')
+    
+class AdminDashView(View):
+    def get(self,request):
+        return HttpResponse("dashboard")

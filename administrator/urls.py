@@ -1,5 +1,5 @@
 from administrator.models import Department
-from administrator.views import BudgetCreate, BudgetList, DepDelete, DepartmentCreate, DepartmentList, DepartmentUpdate, HeadDelete, HeadList, HeadUpdate, HeadView, UserList, userDelete
+from administrator.views import AdminDashView, BudgetCreate, BudgetList, DepDelete, DepartmentCreate, DepartmentList, DepartmentUpdate, HeadDelete, HeadList, HeadUpdate, HeadView, UserList, userDelete
 from django.urls import path
 
 urlpatterns = [
@@ -14,5 +14,6 @@ urlpatterns = [
     path('head/<int:pk>/update',HeadUpdate.as_view(),name="headupdate"),
     path('head/<int:pk>/delete',HeadDelete,name="headdelete"),
     path('users/',UserList.as_view(),name="userlist"),
-    path('user/<int:pk>/delete/',userDelete,name="userdelete")
+    path('user/<int:pk>/delete/',userDelete,name="userdelete"),
+    path('',AdminDashView.as_view(),name="admindash")
 ]

@@ -2,7 +2,7 @@
 
 
 {% block cardtitle %}
-expense
+budgets
 {% endblock cardtitle %}
 
 {% block content %}
@@ -14,22 +14,19 @@ expense
         <th>name</th>
         <th>amount</th>
         <th>date</th>
-        <th>update</th>
+   
       </tr>
     </thead>
     <tbody>
-      {% for i in data %}
+      {% for i in budget %}
       <tr>
         <td>{{forloop.counter}}</td>
         <td>{{i.name}}</td>
         <td>{{i.amount}}</td>
-        <td>{{i.timestamp}}</td>
-        <td><a href="{{i.get_update_url}}" class="btn btn-sm btn-info">update</a></td>
-       
+        <td>{{i.fdate}}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 {% endblock content %}
-
