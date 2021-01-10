@@ -13,7 +13,7 @@ class Department(models.Model):
     name = models.CharField(max_length=100)
     balance = models.FloatField(blank=True, null=True, validators=[MinValueValidator(
         0.00, message="you dont have enough budget to raise fund")], default=0)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
 
     def get_update_url(self):
         return reverse("depupdate", kwargs={'pk': self.pk})
@@ -24,9 +24,9 @@ class Department(models.Model):
 
 class Head(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    department = models.OneToOneField(Department, models.CASCADE)
+    department = models.OneToOneField(Department, models.CASCADE,blank=True,null=True)
     join_date = models.DateField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now=True)
 
     def get_update_url(self):
         return reverse('headupdate',kwargs={'pk':self.pk})
@@ -39,11 +39,10 @@ class Head(models.Model):
 
 
 class Budget(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     desc = models.TextField()
-    amount = models.FloatField(
-        validators=[MinValueValidator(0.00, message="you should enter a valid amount")])
-    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
+    amount = models.FloatField(validators=[MinValueValidator(0, message="you should enter a valid amount")])
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL,blank=True,null=True)
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
