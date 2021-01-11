@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.expressions import Func
 from django.db.models.fields import DateTimeField
 from django.shortcuts import redirect
 from django.urls.base import reverse
@@ -16,10 +17,11 @@ class Expense(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
     amount = models.FloatField(validators=[MinValueValidator(0.00,message="amount should be greater than 0")])
     timestamp = models.DateTimeField(auto_now=True)
+    date =models.DateField()
 
-    @property
-    def date(self):
-        return self.timestamp.strftime( '%m-%d-%Y')
+    # @property
+    # def date(self):
+    #     return self.timestamp.strftime( '%m-%d-%Y')
         
     class Meta:
         ordering = ["-timestamp"]
@@ -44,5 +46,10 @@ class Expense(models.Model):
     #         return super().save(instance,*args,**kwargs)
     #     return super().save(*args, **kwargs)
 
-
+class Month(Func):
+    function = 'EXTRACT'
+    template = '%(function)s(MONTH from %(expressions)s)'
+    output_field = models.IntegerField()
  
+ 
+#  Expense.objects.annotate(month=Month('date')).values('month').annotate(total=Sum('amount')).order_by('month')

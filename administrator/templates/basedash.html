@@ -265,22 +265,8 @@
           </div>
           <!-- /.container-fluid -->
           <div class="container">
-            <div class="row">
-              <div class="col-md-12">
-                <div class="card border-left-success">
-                  <div class="card-header" style="height: 45px">
-                    <div
-                      class="card-title text-dark font-weight-bold text-capitalize"
-                    >
-                      {% block cardtitle %} {% endblock cardtitle %}
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    {% block content %} {% endblock content %}
-                  </div>
-                </div>
-              </div>
-            </div>
+           {% block content %}
+           {% endblock content %}
           </div>
         </div>
         <!-- End of Main Content -->
@@ -353,5 +339,8 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+ {% block js %}
+ {% endblock js %}
   </body>
 </html>

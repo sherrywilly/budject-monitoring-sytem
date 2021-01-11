@@ -36,7 +36,7 @@ class Department(models.Model):
     
     
     def  save(self,*args, **kwargs):
-        self.sname = slugify(self.name)
+        self.slug = slugify(self.name)
         return super(Department,self).save(*args, **kwargs)
     
     def get_absolute_url(self):

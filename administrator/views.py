@@ -1,6 +1,6 @@
 from django.views.generic.list import MultipleObjectMixin
-from userapp.models import Expense
-from django.contrib.auth.models import User
+from userapp.models import Expense, Month
+from django.contrib.auth.models import Group, User
 from django.forms.widgets import DateTimeBaseInput
 from django.views.generic.edit import UpdateView
 from administrator.forms import BudgetForm, DepartmentForm, HeadForm, createUserForm
@@ -11,10 +11,14 @@ from django.urls import reverse_lazy
 from django.views.generic import View, CreateView, ListView,DetailView
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import F
+from django.db.models import F,Sum
 from django.contrib.auth.decorators import login_required
 from administrator.dacorators import adminonly
 from django.utils.decorators import method_decorator
+import datetime
+
+
+from itertools import groupby
 
 # Create your views here.
 decorator =[login_required,adminonly]
@@ -58,17 +62,18 @@ class DepartmentDetailView(DetailView):
     
     def get_context_data(self,*args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        expamount =[]
-        expdate =[]
- 
-        x =Expense.objects.filter(department__name__icontains=self.kwargs.get('slug'))[:5]
-        print(x)
-        for i in x:
-            expamount.append(i.amount)
-            expdate.append(i.date)
-        print(expamount)
-        print(expdate)
-        return context
+        slug =self.kwargs.get('slug')
+        department = Department.objects.get(slug=slug)
+        dep_sum = Expense.objects.filter(department=department).aggregate(Sum('amount'))
+        bud_sum = Budget.objects.filter(department=department).aggregate(Sum('amount'))
+        this_month = datetime.datetime.now().month
+        dep_month_sum = Expense.objects.filter(department=department , date__month=this_month).aggregate(Sum('amount'))
+        print(dep_month_sum)
+        context['exp_sum'] = dep_sum['amount__sum']
+        context['bud_sum'] = bud_sum['amount__sum']
+        context['department'] =department  
+        context['dep_month_sum'] = dep_month_sum['amount__sum']
+        return context 
         
     def get_object(self ):
         slug_ = self.kwargs.get('slug')
@@ -117,7 +122,8 @@ class HeadView(View):
     form2 = HeadForm()
 
     def get(self, *args, **kwargs):
-
+        x=Group.objects.all()
+        print(x)
         context = {
             'form1': self.form1,
             'form2': self.form2
@@ -129,10 +135,11 @@ class HeadView(View):
         hForm = HeadForm(self.request.POST)
         if uForm.is_valid() and hForm.is_valid():
             user = uForm.save()
+            user.groups.add(Group.objects.get(name='user'))
             user.save()
             head = hForm.save(commit=False)
             head.user = user
-            head.groups = 'user'
+            
             head.save()
             return HttpResponseRedirect(reverse_lazy('headlist'))
         else:
@@ -196,4 +203,37 @@ def userDelete(request,pk):
 @method_decorator(decorator,name='dispatch')
 class AdminDashView(View):
     def get(self,request):
-        return render(request,"dashboard.html")
+        # x=(Expense.objects.annotate(month=Month('date')).values('month').annotate(total=Sum('amount')).order_by())
+        ind = Expense.objects.only('date', 'amount').order_by('date')
+        x =[]
+        y=[]
+        month_totals = {
+             y.append(k):x.append(sum(x.amount for x in g) )
+            for k, g in groupby(ind, key=lambda i: i.date.strftime('%B'))
+        }
+        print(x)
+        ins = Budget.objects.only('department', 'amount').order_by('department')
+        m =[]
+        n=[]
+        department = {
+             m.append(k):n.append(sum(x.amount for x in g) )
+            for k, g in groupby(ins, key=lambda i: i.department.name)
+        }
+        
+        d_count = Department.objects.all().count()
+        h_count = Head.objects.all().count()
+        b_sum = Budget.objects.all().aggregate(Sum('amount'))
+        exp_sum = Expense.objects.all().aggregate(Sum('amount'))
+        print(b_sum)
+        context ={
+            'x_month':y,
+            'y_total':x,
+            'g_dep':m,
+            'g_total':n,
+            'department_count':d_count,
+            'head_count':h_count,
+            'budget_sum':b_sum['amount__sum'],
+            'expense_sum':exp_sum['amount__sum']
+            
+        }
+        return render(request,"dashboard.html",context)
