@@ -17,7 +17,10 @@ class Expense(models.Model):
     amount = models.FloatField(validators=[MinValueValidator(0.00,message="amount should be greater than 0")])
     timestamp = models.DateTimeField(auto_now=True)
 
-
+    @property
+    def date(self):
+        return self.timestamp.strftime( '%m-%d-%Y')
+        
     class Meta:
         ordering = ["-timestamp"]
 

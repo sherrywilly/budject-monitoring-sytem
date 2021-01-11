@@ -8,7 +8,7 @@ from django.contrib.auth.forms import UserCreationForm
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
-        fields = '__all__'
+        fields = ['name']
 
 class BudgetForm(forms.ModelForm):
     class Meta:

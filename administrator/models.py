@@ -4,6 +4,8 @@ from django.db.models.base import Model
 from django.db.models.expressions import OrderBy
 from django.shortcuts import reverse
 from django.core.validators import MinValueValidator
+from django.template.defaultfilters import slugify
+from django.db.models import Sum
 
 
 # Create your models here.
@@ -14,7 +16,33 @@ class Department(models.Model):
     balance = models.FloatField(blank=True, null=True, validators=[MinValueValidator(
         0.00, message="you dont have enough budget to raise fund")], default=0)
     timestamp = models.DateTimeField(auto_now=True)
-
+    slug = models.SlugField(unique=True)
+    
+    @property
+    def budgetsum(self):
+        
+        obj =self.budget_set.all().aggregate(total=Sum('amount'))
+           
+        print(obj)
+        return obj['total']
+    
+    @property
+    def expsum(self):
+        obj =self.expense_set.all().aggregate(total=Sum('amount'))
+           
+        print(obj)
+        return obj['total']
+        
+    
+    
+    def  save(self,*args, **kwargs):
+        self.sname = slugify(self.name)
+        return super(Department,self).save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse("depdetail", kwargs={"slug": self.slug})
+    
+    
     def get_update_url(self):
         return reverse("depupdate", kwargs={'pk': self.pk})
 
@@ -56,3 +84,6 @@ class Budget(models.Model):
     @property
     def fdate(self):
         return self.date.strftime('%d-%m-%Y')
+    
+    def __str__(self):
+        return self.name

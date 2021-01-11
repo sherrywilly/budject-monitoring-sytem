@@ -131,3 +131,5 @@ STATICFILES_DIRS = [
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGOUT_REDIRECT_URL = 'loginpage'

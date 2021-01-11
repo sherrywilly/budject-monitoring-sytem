@@ -3,9 +3,11 @@ from django.shortcuts import redirect, render
 from django.urls.base import reverse_lazy
 from django.views.generic import View
 from django.contrib.auth import authenticate,login,logout
+from django.utils.decorators import method_decorator
+from accounts.dacorators import unauth_user
 # Create your views here.
 
-
+@method_decorator(unauth_user,name='dispatch')
 class Loginview(View):
     def get(self,request):
         return render(request,'accounts/login.html')

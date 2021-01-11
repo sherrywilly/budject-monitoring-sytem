@@ -4,7 +4,7 @@ from django.contrib import admin
 # Register your models here.
 
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display =["name","balance","timestamp"]
+    list_display =["name","balance","timestamp","budgetsum",'expsum']
     readonly_fields =["balance"]
 
 admin.site.register(Department,DepartmentAdmin)

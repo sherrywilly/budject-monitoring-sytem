@@ -12,6 +12,9 @@ departments
         <th>id</th>
         <th>name</th>
         <th>Balance</th>
+        <th>Total Budget</th>
+        <th>Total Expense</th>
+        <th>view</th>
         <th>update</th>
         <th>delete</th>
       </tr>
@@ -22,6 +25,9 @@ departments
         <td>{{forloop.counter}}</td>
         <td>{{i.name}}</td>
         <td>{{i.balance}}</td>
+        <td>{{i.budgetsum}}</td>
+        <td>{{i.expsum}}</td>
+        <td><a href="{{i.get_absolute_url}}" class="btn btn-warning btn-sm">View</a></td>
         <td><a href="{{i.get_update_url}}" class="btn btn-info btn-sm">update</a></td>
         <td>
           <form action="{%url 'depdelete' i.id %}" method="post">

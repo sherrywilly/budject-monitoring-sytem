@@ -8,9 +8,13 @@ from django.shortcuts import redirect, render
 from django.views.generic import View, CreateView
 from django.contrib.auth.models import User
 from typing import Final
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from userapp.dacorators import useronly
 # Create your views here.
 
-
+dacorator =[login_required,useronly]
+@method_decorator(dacorator,name='dispatch')
 class ExpenseCreate(CreateView):
     model = Expense
     form_class = ExpenseForm
@@ -34,7 +38,7 @@ class ExpenseCreate(CreateView):
         x.update(balance=F('balance')-amount)
         return super().form_valid(form)
 
-
+@method_decorator(dacorator,name='dispatch')
 class ExpenseView(View):
     def get(self, request, *args, **kwargs):
         try:
@@ -48,7 +52,8 @@ class ExpenseView(View):
         }
         return render(request, 'user/expense.html', context)
 
-
+@login_required
+@useronly
 def ExpenseUpdate(request, pk):
     obj_data = Expense.objects.get(id=pk)
     a: Final = obj_data.amount
@@ -86,7 +91,7 @@ def ExpenseUpdate(request, pk):
     print(request.user)
     return render(request, 'user/form.html', context)
 
-
+@method_decorator(dacorator,name='dispatch')
 class UserDashboard(View):
     def get(self, *args, **kwargs):
         
@@ -100,7 +105,7 @@ class UserDashboard(View):
         return render(self.request,'user/dashboard.html',context)
 
 
-
+@method_decorator(dacorator,name='dispatch')
 class BudgetView(View):
     def get(self,request):
         try:
