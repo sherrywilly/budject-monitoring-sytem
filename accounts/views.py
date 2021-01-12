@@ -20,10 +20,20 @@ class Loginview(View):
         if user is not None:
             login(request,user)
             print(request.user)
+            group =None
+            if request.user.groups.exists():
+                group = request.user.groups.all()[0].name
+                if group =='admin':
+                    print('this user is an admin')
+                    return redirect('admindash')
+                elif group == 'user':
+                    print('this user is an user')
+                    return redirect('userdash')
+                else:
+                    return redirect('logoutpage')
         else:
-            return HttpResponse('invalid user')
+            return redirect('admindash')
             
-        return HttpResponse("test")
         # return HttpResponseRedirect(reverse_lazy(''))
         
         

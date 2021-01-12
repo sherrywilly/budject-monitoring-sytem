@@ -69,10 +69,22 @@ class DepartmentDetailView(DetailView):
         this_month = datetime.datetime.now().month
         dep_month_sum = Expense.objects.filter(department=department , date__month=this_month).aggregate(Sum('amount'))
         print(dep_month_sum)
+        
+        ind = Expense.objects.filter(department__slug__iexact=slug).only('date', 'amount').order_by('date')
+        x =[]
+        y=[]
+        month_totals = {
+             y.append(k):x.append(sum(x.amount for x in g) )
+            for k, g in groupby(ind, key=lambda i: i.date.strftime('%B'))
+        }
+        context['label']=x
+        context['datas'] =y
         context['exp_sum'] = dep_sum['amount__sum']
         context['bud_sum'] = bud_sum['amount__sum']
         context['department'] =department  
         context['dep_month_sum'] = dep_month_sum['amount__sum']
+        context['budget'] = Budget.objects.filter(department__slug__iexact=slug)
+        context['expense'] = Expense.objects.filter(department__slug__iexact=slug)
         return context 
         
     def get_object(self ):

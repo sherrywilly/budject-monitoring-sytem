@@ -1,8 +1,11 @@
+import datetime
+from itertools import groupby
 from django.db.models import F
-from django.http.response import HttpResponse
+from django.db.models.aggregates import Sum
+from django.http.response import HttpResponse, HttpResponseRedirect
 from administrator.models import Budget, Department
 from django.urls.base import reverse, reverse_lazy
-from userapp.forms import ExpenseForm
+from userapp.forms import ExpenseForm, ProfileUpdate
 from userapp.models import Expense
 from django.shortcuts import redirect, render
 from django.views.generic import View, CreateView
@@ -11,6 +14,8 @@ from typing import Final
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from userapp.dacorators import useronly
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
 # Create your views here.
 
 dacorator =[login_required,useronly]
@@ -95,13 +100,30 @@ def ExpenseUpdate(request, pk):
 class UserDashboard(View):
     def get(self, *args, **kwargs):
         
-        budget =Budget.objects.filter(department=self.request.user.head.department)
-        print(budget)
-        exp = Expense.objects.filter(department=self.request.user.head.department)
-        print(exp)
-        context = {
-            
+        slug =self.request.user.head.department
+        dep= Department.objects.get(id=slug.id)
+        dep_sum = Expense.objects.filter(department=slug).aggregate(Sum('amount'))
+        bud_sum = Budget.objects.filter(department=slug).aggregate(Sum('amount'))
+        this_month = datetime.datetime.now().month
+        dep_month_sum = Expense.objects.filter(department=slug , date__month=this_month).aggregate(Sum('amount'))
+        print(dep_month_sum)
+        
+        ind = Expense.objects.filter(department=slug).only('date', 'amount').order_by('date')
+        x =[]
+        y=[]
+        month_totals = {
+             y.append(k):x.append(sum(x.amount for x in g) )
+            for k, g in groupby(ind, key=lambda i: i.date.strftime('%B'))
         }
+        context = dict()
+        context['label']=x
+        context['datas'] =y
+        context['exp_sum'] = dep_sum['amount__sum']
+        context['bud_sum'] = bud_sum['amount__sum']
+        context['department'] =dep
+        context['dep_month_sum'] = dep_month_sum['amount__sum']
+        context['budget'] = Budget.objects.filter(department=slug)
+        context['expense'] = Expense.objects.filter(department=slug)
         return render(self.request,'user/dashboard.html',context)
 
 
@@ -118,5 +140,30 @@ class BudgetView(View):
         
         return render(request,'user/budget.html',context)
     
+
+class ProfileView(View):
+    def get(self,request):
+        form = ProfileUpdate(instance=request.user)
+        context = {
+            'form':form,
+            'head':"profile update"
+        }
+        return render(request,'user/form.html',context)
     
+    def post(self,request, *args, **kwargs):
+        form = ProfileUpdate(request.POST or None,instance=request.user)
+        if form.is_valid():
+            user=form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your user credentials was successfully updated!')
+            return HttpResponseRedirect(reverse_lazy('userprofile'))
+        else:
+        
+            messages.error(request, form.errors)
+            return HttpResponseRedirect(reverse_lazy('userprofile'))
+            
+            
+        
     
+def  home(request):
+    return redirect('loginpage')
