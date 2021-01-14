@@ -23,7 +23,7 @@ dacorator =[login_required,useronly]
 class ExpenseCreate(CreateView):
     model = Expense
     form_class = ExpenseForm
-    success_url = reverse_lazy('expensecreate')
+    success_url = reverse_lazy('expenselist')
     template_name = "user/form.html"
     
     def get_context_data(self, *args,**kwargs) :
@@ -31,17 +31,20 @@ class ExpenseCreate(CreateView):
         context['head'] = "expense create"
         return context
 
-    def form_valid(self, form):
-        try: 
-            form.user = self.request.user
-        except:
-            form.user = 1
-        department = form.cleaned_data['department']
+    def form_valid(self, form): 
+        form.instance.user = self.request.user
+        # department = form.cleaned_data['department']
+        department = self.request.user.head.department
         print(department)
         amount = form.cleaned_data['amount']
-        x=Department.objects.filter(name__iexact=department)
+        x=Department.objects.filter(name__iexact=department.name)
+        form.instance.department =department
         x.update(balance=F('balance')-amount)
         return super().form_valid(form)
+    
+    def form_invalid(self, form) :
+        print(form.errors)
+        return super().form_invalid(form)
 
 @method_decorator(dacorator,name='dispatch')
 class ExpenseView(View):
@@ -166,4 +169,4 @@ class ProfileView(View):
         
     
 def  home(request):
-    return redirect('loginpage')
+    return redirect('loginpage') 

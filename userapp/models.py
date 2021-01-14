@@ -17,7 +17,7 @@ class Expense(models.Model):
     user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
     amount = models.FloatField(validators=[MinValueValidator(0.00,message="amount should be greater than 0")])
     timestamp = models.DateTimeField(auto_now=True)
-    date =models.DateField()
+    date =models.DateField(auto_now=True)
 
     # @property
     # def date(self):

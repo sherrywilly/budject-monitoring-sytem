@@ -3,6 +3,20 @@
 department charge
 {% endblock cardtitle %}
 {% block content %}
+{% if messages %}
+
+    {% for message in messages %}
+    {% if message.tags %}
+    {% if message.tags == 'error' %}
+        
+    <div class="alert alert-danger">{{ message }}</div>
+    {% else %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endif %}
+    {% endif %}
+    
+    {% endfor %}
+{% endif %}
 <form method="post">
 {% csrf_token %}
 {{form1.as_p}}

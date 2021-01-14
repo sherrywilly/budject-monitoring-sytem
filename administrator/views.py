@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import login_required
 from administrator.dacorators import adminonly
 from django.utils.decorators import method_decorator
 import datetime
+from django.contrib import messages
 
 
 from itertools import groupby
@@ -155,8 +156,10 @@ class HeadView(View):
             head.save()
             return HttpResponseRedirect(reverse_lazy('headlist'))
         else:
-            print()
-            return HttpResponse(uForm.errors)
+            print(hForm.errors)
+            messages.error(self.request, hForm.errors)
+            messages.error(self.request, uForm.errors)
+            return redirect(reverse_lazy('headcreate'))
 
 @login_required
 @adminonly
